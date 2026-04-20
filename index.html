@@ -1,0 +1,1220 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MHIST iPad Checkout</title>
+  <style>
+    :root {
+      --teal: #68c4ca;
+      --teal-deep: #4fb3bb;
+      --stone: #686a6e;
+      --stone-dark: #53565a;
+      --royal: #214596;
+      --crimson: #d91f38;
+      --gold: #c7a032;
+      --gold-deep: #a88522;
+      --parchment: #f4f1ea;
+      --cream: #fcfbf8;
+      --ink: #34383d;
+      --slate: #6b6e73;
+      --line: rgba(83, 86, 90, 0.12);
+      --success: #2e8c79;
+      --warning: #c1572a;
+      --glass: rgba(255, 255, 255, 0.78);
+      --glass-strong: rgba(255, 255, 255, 0.94);
+      --shadow: 0 24px 60px rgba(104, 196, 202, 0.16);
+      --radius: 28px;
+      --radius-sm: 20px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: "Avenir Next", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(104, 196, 202, 0.18), transparent 24%),
+        radial-gradient(circle at 10% 80%, rgba(217, 31, 56, 0.08), transparent 20%),
+        linear-gradient(180deg, var(--cream), var(--parchment));
+    }
+
+    h1, h2, h3, h4, p {
+      margin: 0;
+    }
+
+    button,
+    select,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    .shell {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 28px 18px 54px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 28px;
+      border-radius: 34px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.97), rgba(248,250,250,0.97));
+      color: var(--ink);
+      border: 2px solid rgba(104, 196, 202, 0.76);
+      box-shadow: 0 28px 70px rgba(104, 196, 202, 0.18);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -60px;
+      width: 280px;
+      height: 280px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(104,196,202,0.18), transparent 68%);
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--teal-deep);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+      gap: 22px;
+      align-items: end;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-copy {
+      max-width: 720px;
+    }
+
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .logo-mark {
+      width: 118px;
+      min-width: 118px;
+      height: 118px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,250,0.98));
+      border: 6px solid var(--teal);
+      box-shadow: inset 0 0 0 1px rgba(83, 86, 90, 0.08);
+    }
+
+    .logo-mark svg {
+      width: 80px;
+      height: 80px;
+      display: block;
+    }
+
+    .hero-copy h1 {
+      margin-top: 10px;
+      font-size: clamp(34px, 4.4vw, 64px);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-copy p {
+      margin-top: 16px;
+      max-width: 620px;
+      font-size: 18px;
+      line-height: 1.55;
+      color: var(--stone);
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .hero-chip {
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(104, 196, 202, 0.10);
+      border: 1px solid rgba(104, 196, 202, 0.32);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--stone-dark);
+      text-decoration: none;
+    }
+
+    .hero-stats {
+      display: grid;
+      gap: 14px;
+    }
+
+    .stat-card {
+      padding: 18px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, #c9223c, #9f162c);
+      border: 1px solid rgba(217, 31, 56, 0.24);
+      backdrop-filter: blur(8px);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.72);
+    }
+
+    .stat-value {
+      margin-top: 8px;
+      font-size: 38px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .stat-note {
+      margin-top: 8px;
+      font-size: 14px;
+      color: rgba(255,255,255,0.78);
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 18px;
+      margin-top: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--glass);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 18px;
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .brand-card {
+      padding: 18px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(245,240,227,0.96));
+      border: 1px solid var(--line);
+    }
+
+    .brand-card h2 {
+      margin-top: 8px;
+      font-size: 24px;
+      line-height: 1.05;
+    }
+
+    .brand-card p {
+      margin-top: 10px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--slate);
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+    }
+
+    .nav button {
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 18px;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+      transition: transform 140ms ease, background 140ms ease, border-color 140ms ease;
+    }
+
+    .nav button span {
+      display: block;
+      font-size: 12px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--slate);
+      margin-bottom: 4px;
+    }
+
+    .nav button strong {
+      font-size: 16px;
+    }
+
+    .nav button.active,
+    .nav button:hover {
+      background: var(--glass-strong);
+      border-color: rgba(104, 196, 202, 0.36);
+      transform: translateY(-1px);
+    }
+
+    .content {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section {
+      display: none;
+      gap: 18px;
+    }
+
+    .section.active {
+      display: grid;
+    }
+
+    .section-header {
+      padding: 24px;
+    }
+
+    .section-header .eyebrow {
+      color: var(--teal-deep);
+    }
+
+    .section-header h3 {
+      margin-top: 8px;
+      font-size: 34px;
+      line-height: 1;
+    }
+
+    .section-header p {
+      margin-top: 12px;
+      max-width: 740px;
+      color: var(--slate);
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .grid-two {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .card {
+      padding: 22px;
+      background: var(--glass);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .card h4 {
+      font-size: 24px;
+      line-height: 1.05;
+    }
+
+    .card p.lead {
+      margin-top: 10px;
+      color: var(--slate);
+      line-height: 1.55;
+      font-size: 15px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255,255,255,0.84);
+      border: 1px solid var(--line);
+    }
+
+    .metric .kicker {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--slate);
+    }
+
+    .metric strong {
+      display: block;
+      margin-top: 10px;
+      font-size: 30px;
+      line-height: 1;
+    }
+
+    .metric small {
+      display: block;
+      margin-top: 8px;
+      color: var(--slate);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    label.field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label.field span {
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--slate);
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(21, 32, 30, 0.12);
+      background: rgba(255,255,255,0.92);
+      border-radius: 16px;
+      padding: 14px 16px;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 140ms ease, box-shadow 140ms ease;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(104, 196, 202, 0.78);
+      box-shadow: 0 0 0 4px rgba(104, 196, 202, 0.14);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 14px 18px;
+      cursor: pointer;
+      transition: transform 140ms ease, opacity 140ms ease, background 140ms ease;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--stone-dark), var(--stone));
+      color: white;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.9);
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+
+    .btn-alert {
+      background: linear-gradient(135deg, var(--crimson), #b6172d);
+      color: white;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .toolbar .search {
+      flex: 1 1 320px;
+    }
+
+    .toolbar .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .device-grid,
+    .staff-grid,
+    .history-list {
+      display: grid;
+      gap: 14px;
+      margin-top: 18px;
+    }
+
+    .device-grid {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .staff-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .device-card,
+    .staff-card,
+    .history-item {
+      padding: 18px;
+      background: rgba(255,255,255,0.82);
+      border-radius: 22px;
+      border: 1px solid var(--line);
+    }
+
+    .device-top,
+    .history-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .device-name,
+    .staff-name {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.05;
+    }
+
+    .muted {
+      color: var(--slate);
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .status.available {
+      color: var(--success);
+      background: rgba(45, 138, 87, 0.12);
+    }
+
+    .status.out {
+      color: var(--crimson);
+      background: rgba(217, 31, 56, 0.1);
+    }
+
+    .device-meta,
+    .history-meta {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .meta-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--slate);
+    }
+
+    .meta-line strong {
+      color: var(--ink);
+    }
+
+    .empty {
+      padding: 28px;
+      border-radius: 24px;
+      border: 1px dashed rgba(21, 32, 30, 0.18);
+      color: var(--slate);
+      background: rgba(255,255,255,0.5);
+      text-align: center;
+    }
+
+    .footnote {
+      margin-top: 18px;
+      font-size: 13px;
+      color: var(--slate);
+      line-height: 1.55;
+    }
+
+    @media (max-width: 1100px) {
+      .dashboard,
+      .hero-grid,
+      .grid-two {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .metric-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 720px) {
+      .shell {
+        padding: 16px 12px 36px;
+      }
+
+      .hero,
+      .card,
+      .section-header,
+      .sidebar {
+        padding: 18px;
+      }
+
+      .metric-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .device-top,
+      .history-top,
+      .toolbar {
+        flex-direction: column;
+      }
+
+      .hero-copy h1 {
+        font-size: 38px;
+      }
+
+      .brand-lockup {
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="brand-lockup">
+            <div class="logo-mark" aria-hidden="true">
+              <svg viewBox="0 0 100 100" role="img">
+                <path d="M20 12h60v39c0 16-12.5 24.5-30 34C32.5 75.5 20 67 20 51V12z" fill="#ffffff" stroke="#53565a" stroke-width="1.5"/>
+                <rect x="20" y="12" width="60" height="20" fill="#214596"/>
+                <rect x="20" y="32" width="60" height="18" fill="#ffffff"/>
+                <rect x="20" y="50" width="60" height="18" fill="#d91f38"/>
+                <rect x="47" y="32" width="6" height="36" fill="#d91f38"/>
+                <rect x="20" y="39" width="60" height="4" fill="#d91f38"/>
+                <path d="M39 48c3-3 7-3 11 0v10c-4-3-8-3-11 0z" fill="#ffffff" stroke="#53565a" stroke-width="1.2"/>
+                <path d="M50 48c3-3 7-3 11 0v10c-4-3-8-3-11 0z" fill="#ffffff" stroke="#53565a" stroke-width="1.2"/>
+                <path d="M28 18l3 2 3-2 2 4-3 2 1 4-3-2-3 2 1-4-3-2z" fill="#c7a032"/>
+                <path d="M45 18l3 2 3-2 2 4-3 2 1 4-3-2-3 2 1-4-3-2z" fill="#c7a032"/>
+                <path d="M62 18l3 2 3-2 2 4-3 2 1 4-3-2-3 2 1-4-3-2z" fill="#c7a032"/>
+              </svg>
+            </div>
+            <div>
+              <div class="eyebrow">Mill Hill International School Thailand</div>
+              <h1>iPad Check In and Check Out</h1>
+            </div>
+          </div>
+          <p>
+            Use this page to issue iPads to teachers and staff, record who has taken each device, and check devices back in when they are returned. Select the staff member, choose the correct MHIST iPad number, add the class if needed, and the record will be saved in this browser.
+          </p>
+          <div class="hero-actions">
+            <a class="hero-chip" href="#dashboard">Dashboard</a>
+            <a class="hero-chip" href="#devices">Devices</a>
+            <a class="hero-chip" href="#history">History</a>
+            <a class="hero-chip" href="#staff">Staff</a>
+          </div>
+        </div>
+        <div class="hero-stats" id="heroStats"></div>
+      </div>
+    </section>
+
+    <main class="dashboard" id="dashboard">
+      <aside class="panel sidebar">
+        <div class="brand-card">
+          <div class="eyebrow" style="color: var(--teal-deep);">Staff Instructions</div>
+          <h2>MHIST Checkout</h2>
+          <p>Use this area to move between the dashboard, device list, history, and staff directory while managing classroom iPad check-out and check-in.</p>
+        </div>
+        <nav class="nav">
+          <button class="active" data-section="overview"><span>Overview</span><strong>Dashboard</strong></button>
+          <button data-section="devices"><span>Inventory</span><strong>Devices</strong></button>
+          <button data-section="history"><span>Audit Trail</span><strong>History</strong></button>
+          <button data-section="staff"><span>Directory</span><strong>Staff</strong></button>
+        </nav>
+      </aside>
+
+      <div class="content">
+        <section class="section active" id="section-overview">
+          <div class="panel section-header">
+            <div class="eyebrow">Live Overview</div>
+            <h3>Shared devices, clearly tracked</h3>
+            <p>Use the quick checkout form to assign an iPad to a teacher or staff member, then process check-ins from the live list of active loans.</p>
+          </div>
+
+          <div class="metric-grid" id="metricGrid"></div>
+
+          <div class="grid-two">
+            <section class="card">
+              <h4>Quick checkout</h4>
+              <p class="lead">Assign a school iPad to a teacher or staff member for a lesson, class, or homeroom session.</p>
+              <form class="form-grid" id="checkoutForm">
+                <label class="field">
+                  <span>Device</span>
+                  <select id="deviceSelect" required></select>
+                </label>
+                <label class="field">
+                  <span>Teacher or staff</span>
+                  <select id="staffSelect" required></select>
+                </label>
+                <label class="field">
+                  <span>Lesson or class</span>
+                  <input id="lessonInput" type="text" value="Homeroom" placeholder="Homeroom, Digital Citizenship, Year 5..." />
+                </label>
+                <label class="field">
+                  <span>Notes</span>
+                  <textarea id="notesInput" placeholder="Optional notes"></textarea>
+                </label>
+                <div class="actions">
+                  <button class="btn btn-primary" type="submit">Check out selected iPad</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="card">
+              <h4>Currently checked out</h4>
+              <p class="lead">Devices shown here can be returned immediately with one click.</p>
+              <div class="device-grid" id="activeLoans"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="section" id="section-devices">
+          <div class="panel section-header" id="devices">
+            <div class="eyebrow">Inventory</div>
+            <h3>Device status at a glance</h3>
+            <p>Search by asset tag, teacher, or class, and filter the device list by availability.</p>
+            <div class="toolbar">
+              <input class="search" id="deviceSearch" type="search" placeholder="Search devices, staff, or classes" />
+              <div class="controls">
+                <select id="statusFilter">
+                  <option value="all">All devices</option>
+                  <option value="available">Available only</option>
+                  <option value="checkedOut">Checked out only</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="device-grid" id="deviceGrid"></div>
+        </section>
+
+        <section class="section" id="section-history">
+          <div class="panel section-header" id="history">
+            <div class="eyebrow">Audit Trail</div>
+            <h3>Recent lending activity</h3>
+            <p>Every checkout and return is stored locally in this browser so support staff can see what happened most recently.</p>
+          </div>
+          <div class="history-list" id="historyList"></div>
+        </section>
+
+        <section class="section" id="section-staff">
+          <div class="panel section-header" id="staff">
+            <div class="eyebrow">Staff Directory</div>
+            <h3>Deduplicated teacher and staff roster</h3>
+            <p>The original list has been cleaned so each person only appears once in the browser app.</p>
+          </div>
+          <div class="staff-grid" id="staffGrid"></div>
+          <section class="card">
+            <h4>App controls</h4>
+            <p class="lead">If you want to start the demo again from scratch, you can reset the browser data here.</p>
+            <div class="actions">
+              <button class="btn btn-secondary" id="exportButton" type="button">Export history as CSV</button>
+              <button class="btn btn-alert" id="resetButton" type="button">Reset local data</button>
+            </div>
+            <p class="footnote">Because this is a browser app, data is currently saved in local storage on this device and in this browser profile.</p>
+          </section>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const STORAGE_KEYS = {
+      devices: "mhist-browser-checkout-devices",
+      history: "mhist-browser-checkout-history"
+    };
+
+    const STAFF = [
+      "Amelia",
+      "Bo",
+      "Dan",
+      "Fasai",
+      "Fon",
+      "Izzy",
+      "Jen",
+      "Jenny",
+      "Kat",
+      "Kate",
+      "Laura",
+      "Lewis",
+      "Library (Fon)",
+      "Mia",
+      "Mike",
+      "Mint",
+      "Nic",
+      "Peter",
+      "Rachael",
+      "Russell",
+      "Shawn",
+      "Sophia",
+      "Tle",
+      "Tom"
+    ];
+
+    const DEVICE_NAMES = [
+      "MHIST-IPAD-001",
+      "MHIST-IPAD-002",
+      "MHIST-IPAD-003",
+      "MHIST-IPAD-004",
+      "MHIST-IPAD-005",
+      "MHIST-IPAD-006",
+      "MHIST-IPAD-007",
+      "MHIST-IPAD-008",
+      "MHIST-IPAD-009",
+      "MHIST-IPAD-010",
+      "MHIST-IPAD-011",
+      "MHIST-IPAD-012A",
+      "MHIST-IPAD-012B",
+      "MHIST-IPAD-014",
+      "MHIST-IPAD-015",
+      "MHIST-IPAD-016",
+      "MHIST-IPAD-017",
+      "MHIST-IPAD-018",
+      "MHIST-IPAD-019",
+      "MHIST-IPAD-020",
+      "MHIST-IPAD-021",
+      "MHIST-IPAD-022",
+      "MHIST-IPAD-023",
+      "MHIST-IPAD-024",
+      "MHIST-IPAD-025"
+    ];
+
+    const seedDevices = () => DEVICE_NAMES.map((name) => ({
+      id: crypto.randomUUID(),
+      name,
+      model: "iPad Air 11-inch (M3) Wi‑Fi",
+      status: "available",
+      assignedTo: "",
+      checkedOutAt: "",
+      lesson: "",
+      notes: ""
+    }));
+
+    const loadDevices = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.devices);
+        return raw ? JSON.parse(raw) : seedDevices();
+      } catch {
+        return seedDevices();
+      }
+    };
+
+    const loadHistory = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.history);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    };
+
+    const state = {
+      currentSection: "overview",
+      devices: loadDevices(),
+      history: loadHistory()
+    };
+
+    const els = {
+      heroStats: document.getElementById("heroStats"),
+      metricGrid: document.getElementById("metricGrid"),
+      deviceSelect: document.getElementById("deviceSelect"),
+      staffSelect: document.getElementById("staffSelect"),
+      lessonInput: document.getElementById("lessonInput"),
+      notesInput: document.getElementById("notesInput"),
+      checkoutForm: document.getElementById("checkoutForm"),
+      activeLoans: document.getElementById("activeLoans"),
+      deviceGrid: document.getElementById("deviceGrid"),
+      historyList: document.getElementById("historyList"),
+      staffGrid: document.getElementById("staffGrid"),
+      deviceSearch: document.getElementById("deviceSearch"),
+      statusFilter: document.getElementById("statusFilter"),
+      resetButton: document.getElementById("resetButton"),
+      exportButton: document.getElementById("exportButton")
+    };
+
+    const saveState = () => {
+      localStorage.setItem(STORAGE_KEYS.devices, JSON.stringify(state.devices));
+      localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(state.history));
+    };
+
+    const availableDevices = () => state.devices.filter((device) => device.status === "available");
+    const checkedOutDevices = () => state.devices.filter((device) => device.status === "checkedOut");
+
+    const formatDateTime = (value) => {
+      if (!value) return "Not recorded";
+      return new Date(value).toLocaleString([], {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+      });
+    };
+
+    const escapeHtml = (value) =>
+      String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    const renderHeroStats = () => {
+      const stats = [
+        {
+          label: "Available now",
+          value: availableDevices().length,
+          note: "Ready for immediate homeroom use"
+        },
+        {
+          label: "Checked out",
+          value: checkedOutDevices().length,
+          note: "Currently assigned to staff"
+        }
+      ];
+
+      els.heroStats.innerHTML = stats.map((stat) => `
+        <div class="stat-card">
+          <div class="stat-label">${escapeHtml(stat.label)}</div>
+          <div class="stat-value">${escapeHtml(stat.value)}</div>
+          <div class="stat-note">${escapeHtml(stat.note)}</div>
+        </div>
+      `).join("");
+    };
+
+    const renderMetrics = () => {
+      const firstAvailable = availableDevices()[0]?.name || "None right now";
+      const lastActivity = state.history[0]
+        ? `${state.history[0].action === "checkout" ? "Checkout" : "Check in"} • ${state.history[0].deviceName}`
+        : "No activity yet";
+
+      const metrics = [
+        {
+          kicker: "Total devices",
+          value: state.devices.length,
+          note: "Seeded from the MHIST inventory list you supplied."
+        },
+        {
+          kicker: "Ready to lend",
+          value: availableDevices().length,
+          note: `Next available: ${firstAvailable}`
+        },
+        {
+          kicker: "Out now",
+          value: checkedOutDevices().length,
+          note: "Live count of active classroom loans."
+        },
+        {
+          kicker: "Latest activity",
+          value: state.history.length,
+          note: lastActivity
+        }
+      ];
+
+      els.metricGrid.innerHTML = metrics.map((metric) => `
+        <div class="metric">
+          <div class="kicker">${escapeHtml(metric.kicker)}</div>
+          <strong>${escapeHtml(metric.value)}</strong>
+          <small>${escapeHtml(metric.note)}</small>
+        </div>
+      `).join("");
+    };
+
+    const renderCheckoutOptions = () => {
+      const available = availableDevices();
+      els.deviceSelect.innerHTML = available.length
+        ? available.map((device) => `<option value="${escapeHtml(device.id)}">${escapeHtml(device.name)}</option>`).join("")
+        : `<option value="">No available iPads</option>`;
+
+      els.deviceSelect.disabled = available.length === 0;
+
+      els.staffSelect.innerHTML = STAFF.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
+    };
+
+    const activeLoanCard = (device) => `
+      <article class="device-card">
+        <div class="device-top">
+          <div>
+            <div class="device-name">${escapeHtml(device.name)}</div>
+            <div class="muted">${escapeHtml(device.model)}</div>
+          </div>
+          <span class="status out">Checked Out</span>
+        </div>
+        <div class="device-meta">
+          <div class="meta-line"><strong>Assigned to:</strong> ${escapeHtml(device.assignedTo || "Unassigned")}</div>
+          <div class="meta-line"><strong>Class:</strong> ${escapeHtml(device.lesson || "Not entered")}</div>
+          <div class="meta-line"><strong>Out since:</strong> ${escapeHtml(formatDateTime(device.checkedOutAt))}</div>
+          ${device.notes ? `<div class="meta-line"><strong>Notes:</strong> ${escapeHtml(device.notes)}</div>` : ""}
+        </div>
+        <div class="actions">
+          <button class="btn btn-secondary" data-checkin="${escapeHtml(device.id)}" type="button">Check in now</button>
+        </div>
+      </article>
+    `;
+
+    const renderActiveLoans = () => {
+      const loans = checkedOutDevices()
+        .sort((a, b) => new Date(b.checkedOutAt) - new Date(a.checkedOutAt));
+
+      els.activeLoans.innerHTML = loans.length
+        ? loans.map(activeLoanCard).join("")
+        : `<div class="empty">No devices are checked out right now.</div>`;
+    };
+
+    const renderDevices = () => {
+      const term = els.deviceSearch.value.trim().toLowerCase();
+      const filter = els.statusFilter.value;
+      const devices = state.devices
+        .filter((device) => {
+          const matchesSearch = !term ||
+            device.name.toLowerCase().includes(term) ||
+            device.assignedTo.toLowerCase().includes(term) ||
+            device.lesson.toLowerCase().includes(term);
+          const matchesStatus = filter === "all" || device.status === filter;
+          return matchesSearch && matchesStatus;
+        })
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+      els.deviceGrid.innerHTML = devices.length
+        ? devices.map((device) => `
+            <article class="device-card">
+              <div class="device-top">
+                <div>
+                  <div class="device-name">${escapeHtml(device.name)}</div>
+                  <div class="muted">${escapeHtml(device.model)}</div>
+                </div>
+                <span class="status ${device.status === "available" ? "available" : "out"}">
+                  ${device.status === "available" ? "Available" : "Checked Out"}
+                </span>
+              </div>
+              <div class="device-meta">
+                <div class="meta-line"><strong>Assigned to:</strong> ${escapeHtml(device.assignedTo || "Nobody")}</div>
+                <div class="meta-line"><strong>Class:</strong> ${escapeHtml(device.lesson || "Not entered")}</div>
+                <div class="meta-line"><strong>Timestamp:</strong> ${escapeHtml(device.checkedOutAt ? formatDateTime(device.checkedOutAt) : "Ready to lend")}</div>
+                ${device.notes ? `<div class="meta-line"><strong>Notes:</strong> ${escapeHtml(device.notes)}</div>` : ""}
+              </div>
+              ${device.status === "checkedOut" ? `
+                <div class="actions">
+                  <button class="btn btn-secondary" data-checkin="${escapeHtml(device.id)}" type="button">Check in now</button>
+                </div>
+              ` : ""}
+            </article>
+          `).join("")
+        : `<div class="empty">No devices match this search or filter.</div>`;
+    };
+
+    const renderHistory = () => {
+      els.historyList.innerHTML = state.history.length
+        ? state.history.map((entry) => `
+            <article class="history-item">
+              <div class="history-top">
+                <div>
+                  <div class="device-name">${escapeHtml(entry.deviceName)}</div>
+                  <div class="muted">${escapeHtml(entry.staffName)}</div>
+                </div>
+                <span class="status ${entry.action === "checkout" ? "out" : "available"}">
+                  ${entry.action === "checkout" ? "Checked Out" : "Checked In"}
+                </span>
+              </div>
+              <div class="history-meta">
+                <div class="meta-line"><strong>When:</strong> ${escapeHtml(formatDateTime(entry.timestamp))}</div>
+                <div class="meta-line"><strong>Class:</strong> ${escapeHtml(entry.lesson || "Not entered")}</div>
+                ${entry.notes ? `<div class="meta-line"><strong>Notes:</strong> ${escapeHtml(entry.notes)}</div>` : ""}
+              </div>
+            </article>
+          `).join("")
+        : `<div class="empty">No check-in or check-out activity has been recorded yet.</div>`;
+    };
+
+    const renderStaff = () => {
+      els.staffGrid.innerHTML = STAFF.map((name) => {
+        const activeCount = checkedOutDevices().filter((device) => device.assignedTo === name).length;
+        return `
+          <article class="staff-card">
+            <div class="staff-name">${escapeHtml(name)}</div>
+            <p class="lead" style="margin-top: 10px;">${escapeHtml(activeCount)} device(s) currently assigned</p>
+          </article>
+        `;
+      }).join("");
+    };
+
+    const renderSections = () => {
+      document.querySelectorAll(".section").forEach((section) => {
+        section.classList.toggle("active", section.id === `section-${state.currentSection}`);
+      });
+
+      document.querySelectorAll(".nav button").forEach((button) => {
+        button.classList.toggle("active", button.dataset.section === state.currentSection);
+      });
+    };
+
+    const renderAll = () => {
+      renderHeroStats();
+      renderMetrics();
+      renderCheckoutOptions();
+      renderActiveLoans();
+      renderDevices();
+      renderHistory();
+      renderStaff();
+      renderSections();
+    };
+
+    const addHistory = (action, device) => {
+      state.history.unshift({
+        id: crypto.randomUUID(),
+        action,
+        deviceName: device.name,
+        staffName: device.assignedTo || "Unassigned",
+        lesson: device.lesson,
+        notes: device.notes,
+        timestamp: new Date().toISOString()
+      });
+    };
+
+    els.checkoutForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const deviceId = els.deviceSelect.value;
+      const staffName = els.staffSelect.value;
+      const lesson = els.lessonInput.value.trim();
+      const notes = els.notesInput.value.trim();
+
+      const device = state.devices.find((item) => item.id === deviceId);
+      if (!device || device.status !== "available" || !staffName) return;
+
+      device.status = "checkedOut";
+      device.assignedTo = staffName;
+      device.lesson = lesson;
+      device.notes = notes;
+      device.checkedOutAt = new Date().toISOString();
+
+      addHistory("checkout", device);
+      saveState();
+      renderAll();
+      els.notesInput.value = "";
+    });
+
+    document.body.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-checkin]");
+      if (!button) return;
+
+      const device = state.devices.find((item) => item.id === button.dataset.checkin);
+      if (!device) return;
+
+      addHistory("checkin", device);
+      device.status = "available";
+      device.assignedTo = "";
+      device.lesson = "";
+      device.notes = "";
+      device.checkedOutAt = "";
+      saveState();
+      renderAll();
+    });
+
+    document.querySelectorAll(".nav button").forEach((button) => {
+      button.addEventListener("click", () => {
+        state.currentSection = button.dataset.section;
+        renderSections();
+      });
+    });
+
+    els.deviceSearch.addEventListener("input", renderDevices);
+    els.statusFilter.addEventListener("change", renderDevices);
+
+    els.resetButton.addEventListener("click", () => {
+      const confirmed = window.confirm("Reset all local browser data for devices and history?");
+      if (!confirmed) return;
+      state.devices = seedDevices();
+      state.history = [];
+      saveState();
+      renderAll();
+    });
+
+    els.exportButton.addEventListener("click", () => {
+      if (!state.history.length) {
+        window.alert("There is no history to export yet.");
+        return;
+      }
+
+      const rows = [
+        ["Action", "Device", "Staff", "Class", "Notes", "Timestamp"],
+        ...state.history.map((item) => [
+          item.action,
+          item.deviceName,
+          item.staffName,
+          item.lesson,
+          item.notes,
+          item.timestamp
+        ])
+      ];
+
+      const csv = rows
+        .map((row) => row.map((cell) => `"${String(cell).replaceAll('"', '""')}"`).join(","))
+        .join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "mhist-ipad-checkout-history.csv";
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+
+    renderAll();
+  </script>
+</body>
+</html>
