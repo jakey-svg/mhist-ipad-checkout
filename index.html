@@ -499,6 +499,69 @@
       border: 1px solid var(--line);
     }
 
+    .quick-help {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(104, 196, 202, 0.08);
+      border: 1px solid rgba(104, 196, 202, 0.18);
+      color: var(--slate);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .multi-select {
+      border: 1px solid rgba(21, 32, 30, 0.12);
+      background: rgba(255,255,255,0.92);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .multi-select summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      color: var(--ink);
+      user-select: none;
+    }
+
+    .multi-select summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .multi-select[open] {
+      box-shadow: 0 0 0 4px rgba(104, 196, 202, 0.14);
+      border-color: rgba(104, 196, 202, 0.78);
+    }
+
+    .multi-select-panel {
+      max-height: 240px;
+      overflow: auto;
+      padding: 8px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      gap: 6px;
+      background: rgba(248, 250, 250, 0.95);
+    }
+
+    .multi-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.84);
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .multi-option input {
+      width: auto;
+      margin: 0;
+      padding: 0;
+      box-shadow: none;
+    }
+
     .device-top,
     .history-top {
       display: flex;
@@ -683,7 +746,7 @@
           <div class="panel section-header">
             <div class="eyebrow">Live Overview</div>
             <h3>Shared devices, clearly tracked</h3>
-            <p>Use the quick checkout form to assign an iPad to a teacher or staff member, then process check-ins from the live list of active loans.</p>
+            <p>Select the staff member once, then tap any available iPad below to issue it straight away. Returns can still be processed in one click from the active list.</p>
           </div>
 
           <div class="metric-grid" id="metricGrid"></div>
@@ -691,15 +754,18 @@
           <div class="grid-two">
             <section class="card">
               <h4>Quick checkout</h4>
-              <p class="lead">Assign a school iPad to a teacher or staff member for a lesson, class, or homeroom session.</p>
-              <form class="form-grid" id="checkoutForm">
+              <p class="lead">Choose the teacher or staff member, add the class if needed, then tap an available iPad to check it out instantly.</p>
+              <div class="form-grid">
                 <label class="field">
-                  <span>Device</span>
-                  <select id="deviceSelect" required></select>
+                  <span>iPads</span>
+                  <details class="multi-select" id="devicePicker">
+                    <summary id="devicePickerSummary">Select one or more iPads</summary>
+                    <div class="multi-select-panel" id="devicePickerOptions"></div>
+                  </details>
                 </label>
                 <label class="field">
                   <span>Teacher or staff</span>
-                  <select id="staffSelect" required></select>
+                  <select id="staffSelect"></select>
                 </label>
                 <label class="field">
                   <span>Lesson or class</span>
@@ -709,10 +775,13 @@
                   <span>Notes</span>
                   <textarea id="notesInput" placeholder="Optional notes"></textarea>
                 </label>
-                <div class="actions">
-                  <button class="btn btn-primary" type="submit">Check out selected iPad</button>
-                </div>
-              </form>
+              </div>
+              <div class="quick-help">
+                Choose one or more iPads, select the staff member once, then check them all out together in a single action.
+              </div>
+              <div class="actions">
+                <button class="btn btn-primary" id="quickCheckoutButton" type="button">Check out selected iPads</button>
+              </div>
             </section>
 
             <section class="card">
@@ -839,6 +908,7 @@
       model: "iPad Air 11-inch (M3) Wi‑Fi",
       status: "available",
       assignedTo: "",
+      checkoutGroupId: "",
       checkedOutAt: "",
       lesson: "",
       notes: ""
@@ -865,17 +935,21 @@
     const state = {
       currentSection: "overview",
       devices: loadDevices(),
-      history: loadHistory()
+      history: loadHistory(),
+      selectedStaff: STAFF[0] || "",
+      selectedDeviceIds: []
     };
 
     const els = {
       heroStats: document.getElementById("heroStats"),
       metricGrid: document.getElementById("metricGrid"),
-      deviceSelect: document.getElementById("deviceSelect"),
+      devicePicker: document.getElementById("devicePicker"),
+      devicePickerSummary: document.getElementById("devicePickerSummary"),
+      devicePickerOptions: document.getElementById("devicePickerOptions"),
       staffSelect: document.getElementById("staffSelect"),
       lessonInput: document.getElementById("lessonInput"),
       notesInput: document.getElementById("notesInput"),
-      checkoutForm: document.getElementById("checkoutForm"),
+      quickCheckoutButton: document.getElementById("quickCheckoutButton"),
       activeLoans: document.getElementById("activeLoans"),
       deviceGrid: document.getElementById("deviceGrid"),
       historyList: document.getElementById("historyList"),
@@ -893,6 +967,39 @@
 
     const availableDevices = () => state.devices.filter((device) => device.status === "available");
     const checkedOutDevices = () => state.devices.filter((device) => device.status === "checkedOut");
+    const groupedCheckedOutDevices = () => {
+      const groups = new Map();
+
+      checkedOutDevices().forEach((device) => {
+        const fallbackKey = [
+          device.assignedTo || "Unassigned",
+          device.lesson || "",
+          device.notes || "",
+          device.checkedOutAt || ""
+        ].join("::");
+        const key = device.checkoutGroupId || fallbackKey;
+
+        if (!groups.has(key)) {
+          groups.set(key, {
+            id: key,
+            assignedTo: device.assignedTo || "Unassigned",
+            lesson: device.lesson || "",
+            notes: device.notes || "",
+            checkedOutAt: device.checkedOutAt || "",
+            devices: []
+          });
+        }
+
+        groups.get(key).devices.push(device);
+      });
+
+      return Array.from(groups.values())
+        .map((group) => ({
+          ...group,
+          devices: group.devices.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+        }))
+        .sort((a, b) => new Date(b.checkedOutAt) - new Date(a.checkedOutAt));
+    };
 
     const formatDateTime = (value) => {
       if (!value) return "Not recorded";
@@ -976,39 +1083,68 @@
 
     const renderCheckoutOptions = () => {
       const available = availableDevices();
-      els.deviceSelect.innerHTML = available.length
-        ? available.map((device) => `<option value="${escapeHtml(device.id)}">${escapeHtml(device.name)}</option>`).join("")
-        : `<option value="">No available iPads</option>`;
+      state.selectedDeviceIds = state.selectedDeviceIds.filter((id) =>
+        available.some((device) => device.id === id)
+      );
 
-      els.deviceSelect.disabled = available.length === 0;
+      els.devicePickerOptions.innerHTML = available.length
+        ? available
+            .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+            .map((device) => `
+              <label class="multi-option">
+                <input type="checkbox" value="${escapeHtml(device.id)}" ${state.selectedDeviceIds.includes(device.id) ? "checked" : ""} />
+                <span>${escapeHtml(device.name)}</span>
+              </label>
+            `)
+            .join("")
+        : `<div class="empty">No available iPads</div>`;
 
-      els.staffSelect.innerHTML = STAFF.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join("");
+      const selectedNames = available
+        .filter((device) => state.selectedDeviceIds.includes(device.id))
+        .map((device) => device.name);
+
+      if (!available.length) {
+        els.devicePickerSummary.textContent = "No available iPads";
+      } else if (!selectedNames.length) {
+        els.devicePickerSummary.textContent = "Select one or more iPads";
+      } else if (selectedNames.length === 1) {
+        els.devicePickerSummary.textContent = selectedNames[0];
+      } else {
+        els.devicePickerSummary.textContent = `${selectedNames.length} iPads selected`;
+      }
+
+      els.quickCheckoutButton.disabled = available.length === 0 || state.selectedDeviceIds.length === 0;
+
+      els.staffSelect.innerHTML = STAFF.map((name) => `
+        <option value="${escapeHtml(name)}" ${name === state.selectedStaff ? "selected" : ""}>${escapeHtml(name)}</option>
+      `).join("");
     };
 
-    const activeLoanCard = (device) => `
+    const activeLoanCard = (group) => `
       <article class="device-card">
         <div class="device-top">
           <div>
-            <div class="device-name">${escapeHtml(device.name)}</div>
-            <div class="muted">${escapeHtml(device.model)}</div>
+            <div class="device-name">${escapeHtml(group.assignedTo)}</div>
+            <div class="muted">${escapeHtml(group.devices.length === 1 ? "1 iPad checked out" : `${group.devices.length} iPads checked out`)}</div>
           </div>
           <span class="status out">Checked Out</span>
         </div>
         <div class="device-meta">
-          <div class="meta-line"><strong>Assigned to:</strong> ${escapeHtml(device.assignedTo || "Unassigned")}</div>
-          <div class="meta-line"><strong>Class:</strong> ${escapeHtml(device.lesson || "Not entered")}</div>
-          <div class="meta-line"><strong>Out since:</strong> ${escapeHtml(formatDateTime(device.checkedOutAt))}</div>
-          ${device.notes ? `<div class="meta-line"><strong>Notes:</strong> ${escapeHtml(device.notes)}</div>` : ""}
+          <div class="meta-line"><strong>iPads:</strong> ${escapeHtml(group.devices.map((device) => device.name).join(", "))}</div>
+          <div class="meta-line"><strong>Class:</strong> ${escapeHtml(group.lesson || "Not entered")}</div>
+          <div class="meta-line"><strong>Out since:</strong> ${escapeHtml(formatDateTime(group.checkedOutAt))}</div>
+          ${group.notes ? `<div class="meta-line"><strong>Notes:</strong> ${escapeHtml(group.notes)}</div>` : ""}
         </div>
         <div class="actions">
-          <button class="btn btn-secondary" data-checkin="${escapeHtml(device.id)}" type="button">Check in now</button>
+          <button class="btn btn-secondary" data-checkin-group="${escapeHtml(group.id)}" type="button">
+            ${group.devices.length === 1 ? "Check in now" : "Check in all iPads"}
+          </button>
         </div>
       </article>
     `;
 
     const renderActiveLoans = () => {
-      const loans = checkedOutDevices()
-        .sort((a, b) => new Date(b.checkedOutAt) - new Date(a.checkedOutAt));
+      const loans = groupedCheckedOutDevices();
 
       els.activeLoans.innerHTML = loans.length
         ? loans.map(activeLoanCard).join("")
@@ -1125,29 +1261,31 @@
       });
     };
 
-    els.checkoutForm.addEventListener("submit", (event) => {
-      event.preventDefault();
-      const deviceId = els.deviceSelect.value;
-      const staffName = els.staffSelect.value;
-      const lesson = els.lessonInput.value.trim();
-      const notes = els.notesInput.value.trim();
-
-      const device = state.devices.find((item) => item.id === deviceId);
-      if (!device || device.status !== "available" || !staffName) return;
-
-      device.status = "checkedOut";
-      device.assignedTo = staffName;
-      device.lesson = lesson;
-      device.notes = notes;
-      device.checkedOutAt = new Date().toISOString();
-
-      addHistory("checkout", device);
-      saveState();
-      renderAll();
-      els.notesInput.value = "";
-    });
-
     document.body.addEventListener("click", (event) => {
+      const groupButton = event.target.closest("[data-checkin-group]");
+      if (groupButton) {
+        state.devices
+          .filter((device) => device.status === "checkedOut" && (device.checkoutGroupId || [
+            device.assignedTo || "Unassigned",
+            device.lesson || "",
+            device.notes || "",
+            device.checkedOutAt || ""
+          ].join("::")) === groupButton.dataset.checkinGroup)
+          .forEach((device) => {
+            addHistory("checkin", device);
+            device.status = "available";
+            device.assignedTo = "";
+            device.checkoutGroupId = "";
+            device.lesson = "";
+            device.notes = "";
+            device.checkedOutAt = "";
+          });
+
+        saveState();
+        renderAll();
+        return;
+      }
+
       const button = event.target.closest("[data-checkin]");
       if (!button) return;
 
@@ -1157,6 +1295,7 @@
       addHistory("checkin", device);
       device.status = "available";
       device.assignedTo = "";
+      device.checkoutGroupId = "";
       device.lesson = "";
       device.notes = "";
       device.checkedOutAt = "";
@@ -1169,6 +1308,58 @@
         state.currentSection = button.dataset.section;
         renderSections();
       });
+    });
+
+    els.staffSelect.addEventListener("change", () => {
+      state.selectedStaff = els.staffSelect.value;
+    });
+
+    els.devicePickerOptions.addEventListener("change", (event) => {
+      const checkbox = event.target.closest("input[type='checkbox']");
+      if (!checkbox) return;
+
+      if (checkbox.checked) {
+        if (!state.selectedDeviceIds.includes(checkbox.value)) {
+          state.selectedDeviceIds.push(checkbox.value);
+        }
+      } else {
+        state.selectedDeviceIds = state.selectedDeviceIds.filter((id) => id !== checkbox.value);
+      }
+
+      renderCheckoutOptions();
+    });
+
+    els.quickCheckoutButton.addEventListener("click", () => {
+      const staffName = els.staffSelect.value;
+      const lesson = els.lessonInput.value.trim();
+      const notes = els.notesInput.value.trim();
+
+      if (!staffName || state.selectedDeviceIds.length === 0) return;
+
+      state.selectedStaff = staffName;
+      const timestamp = new Date().toISOString();
+      const checkoutGroupId = crypto.randomUUID();
+
+      state.selectedDeviceIds.forEach((deviceId) => {
+        const device = state.devices.find((item) => item.id === deviceId);
+        if (!device || device.status !== "available") return;
+
+        device.status = "checkedOut";
+        device.assignedTo = staffName;
+        device.checkoutGroupId = checkoutGroupId;
+        device.lesson = lesson;
+        device.notes = notes;
+        device.checkedOutAt = timestamp;
+        addHistory("checkout", device);
+      });
+
+      state.selectedDeviceIds = [];
+      if (els.devicePicker.open) {
+        els.devicePicker.open = false;
+      }
+      saveState();
+      renderAll();
+      els.notesInput.value = "";
     });
 
     els.deviceSearch.addEventListener("input", renderDevices);
